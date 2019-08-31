@@ -1,0 +1,136 @@
+﻿@model List<BlukData_Insert.Models.ContactInfo>
+
+@{
+    ViewData["Title"] = "BulkData";
+}
+
+<div style="width:700px; height:5px; background-color:cornflowerblue">
+    @using (Html.BeginForm("BulkData", "Home", FormMethod.Post))
+    {
+        @Html.ValidationSummary(true)
+
+        @Html.AntiForgeryToken()
+
+        @if (ViewBag.Message != null)
+        {
+            <div style="border:solid 1px green">
+                @ViewBag.Message
+            </div>
+        }
+
+        <div><a href="#" id="addNew">Add-New</a></div>
+        <table id="dataTable" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <th>Name</th>
+                <th>Adress</th>
+            </tr>
+
+            @if (Model != null && Model.Count > 0)
+            {
+                int j = 0;
+                foreach (var item in Model)
+                {
+                    <tr style="border:1px solid black">
+                        <td>
+                            @Html.TextBoxFor(s => s[j].Name)
+                        </td>
+                        <td>
+                            @Html.TextBoxFor(s => s[j].Address)
+                        </td>
+
+                        <td>
+                            @if (j > 0)
+                            {
+                                <a href="#" class="remove">Remove</a>
+                            }
+                        </td>
+                    </tr>
+                    j++;
+                }
+            }
+        </table>
+
+        <input type="submit" value="Save Bulk Data" class="btn btn-primary" />
+    }
+</div>
+
+@*<div class="row">
+        <div class="col-md-4">
+            <form asp-action="BulkData">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Address" class="control-label"></label>
+                    <input asp-for="Address" class="form-control" />
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>*@
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        // 1- Add new one
+        $("#addNew").click(function (e) {
+            e.preventDefault();
+
+            var $tableBody = $("#dataTable");
+            var $trLast = $tableBody.find("tr:last");
+            var $trNew = $trLast.clone();
+
+
+            var suffix = $trNew.find(":input:first").attr("Name").match(/\d+/);
+
+            $trNew.find("td:last").html('<a href="#" class="remove">Remove</a>');
+                
+            $.each($trNew.find(":input"), function (i, val) {
+                //REplace Name
+                var oldN = $(this).attr("Name");
+                var newN = oldN.replace('[' + suffix + ']', '[' + (parseInt(suffix)  + 1) + ']');
+
+                $(this).attr("Name", newN);
+
+                //Replace Value
+
+                var type = $(this).attr('type');
+                if (type.toLowerCase() == "text") {
+                    $(this).attr('value', '');
+                }
+
+                // if you have another type than replace with default value
+
+                $(this).removeClass("input-validation-error");
+            });
+
+            $trLast.after($trNew);
+
+            // REassign Value
+
+            var form = $("form")
+                .removeData("validator").removeData("unobtrusiveValidation");
+            $.validator.unobstrusive.parse(form);
+        });
+
+        $("a.remove").click(function (e) {
+
+            e.preventDefault();
+
+            $(this).parent().parent().remove();
+        });
+
+    });
+</script>
+}
